@@ -67,7 +67,7 @@ if submitted and text:
             )
 
 
-        if response.text:
+            if response.text:
                 reply = response.text
                 st.session_state.history.append(f"Doctor: {reply}")
                 st.chat_message("assistant").write(reply)
@@ -97,6 +97,7 @@ if submitted and text:
         # # Emergency detection
         # if "EMERGENCY" in reply.upper():
         #     st.error("⚠️ Emergency symptoms detected. Seek medical help immediately.")
+
 
 
 
