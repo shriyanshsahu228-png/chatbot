@@ -63,18 +63,41 @@ if submitted and text:
             4. When to see doctor
             """
 
+            with st.spinner("Analyzing your symptoms, Please Hold few seconds..."):
+            try:
+                # 1. Model name 'gemini-1.5-flash' use karein (sabse stable hai)
+                # 2. 'contents' ko hamesha list [ ] mein bhejein
                 response = client.models.generate_content(
-                    model="gemini-1.5-flash",
-                    contents=prompt
-                        )
-                reply = response.text if response.text else "No responce generated"
+                    model="gemini-1.5-flash", 
+                    contents=[prompt]
+                )
+                
+                if response.text:
+                    reply = response.text
+                else:
+                    reply = "I couldn't generate a response. Please try again."
 
-                st.session_state.history.append(f"Doctor:{reply}")
-                st.chat_message("assistant").write(reply)
+            except Exception as e:
+                # Agar ab bhi error aaye, toh ye line batayegi ki ASLI wajah kya hai
+                st.error(f"Actual Error: {e}")
+                reply = "Sorry, an error occurred while processing your request."
+
+            st.session_state.history.append(f"Doctor: {reply}")
+            st.chat_message("assistant").write(reply)
+            # try:
+            #     response = client.models.generate_content(
+            #         model="gemini-1.5-flash",
+            #         contents=[prompt]
+            #             )
+            #     reply = response.text if response.text else "No responce generated"
+
+            #     st.session_state.history.append(f"Doctor:{reply}")
+            #     st.chat_message("assistant").write(reply)
                                   
                 # Emergency detection only
-                if "EMERGENCY" in reply.upper():
+            if "EMERGENCY" in reply.upper():
                     st.error("⚠️ Emergency symptoms detected. Seek medical help immediately.")
+
 
 
 
