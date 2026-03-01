@@ -1,6 +1,17 @@
 import streamlit as st
 from google import genai
+# 1. Page ki basic settings (Isse menu options kam ho jayenge)
+st.set_page_config(page_title="AI Doctor Assistant", layout="centered")
 
+# 2. CSS Magic (Isse Fork, GitHub aur Header poori tarah hide ho jayenge)
+st.markdown("""
+    <style>
+    #MainMenu {visibility: hidden;}
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
+    .stAppDeployButton {display:none;}
+    </style>
+    """, unsafe_allow_html=True)
 # API Client configuration
 try:
     client = genai.Client(api_key=st.secrets["GOOGLE_API_KEY"])
@@ -54,23 +65,39 @@ if submitted and text:
                 model="gemini-2.5-flash", 
                 contents=[prompt]
             )
-            
-            if response.text:
+
+
+        if response.text:
                 reply = response.text
-            else:
-                reply = "I couldn't generate a response. Please try again."
-
+                st.session_state.history.append(f"Doctor: {reply}")
+                st.chat_message("assistant").write(reply)
+            
         except Exception as e:
-            # Actual error dikhane ke liye
-            st.error(f"Actual Error: {e}")
-            reply = "Sorry, an error occurred while processing your request."
+            # Agar limit khatam ho jaye toh ye message dikhega
+            if "429" in str(e) or "limit" in str(e).lower():
+                st.warning("⚠️ Daily limit reached for this account. Please check back tomorrow or contact admin.")
+            else:
+                st.error(f"Error: {e}")
 
-        st.session_state.history.append(f"Doctor: {reply}")
-        st.chat_message("assistant").write(reply)
+        if "EMERGENCY" in locals() and "EMERGENCY" in reply.upper():
+            st.error("⚠️ EMERGENCY detected!")
+        #     if response.text:
+        #         reply = response.text
+        #     else:
+        #         reply = "I couldn't generate a response. Please try again."
+
+        # except Exception as e:
+        #     # Actual error dikhane ke liye
+        #     st.error(f"Actual Error: {e}")
+        #     reply = "Sorry, an error occurred while processing your request."
+
+        # st.session_state.history.append(f"Doctor: {reply}")
+        # st.chat_message("assistant").write(reply)
                                   
-        # Emergency detection
-        if "EMERGENCY" in reply.upper():
-            st.error("⚠️ Emergency symptoms detected. Seek medical help immediately.")
+        # # Emergency detection
+        # if "EMERGENCY" in reply.upper():
+        #     st.error("⚠️ Emergency symptoms detected. Seek medical help immediately.")
+
 
 
 
