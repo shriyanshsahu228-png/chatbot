@@ -1,56 +1,79 @@
+#streamlit run doctorAI.py
 import streamlit as st
-from openai import OpenAI
+from google import genai
+#from dotenv import load_dotenv
+#import os
+#load_dotenv()
 
-# Show title and description.
-st.title("💬 Chatbot")
-st.write(
-    "This is a simple chatbot that uses OpenAI's GPT-3.5 model to generate responses. "
-    "To use this app, you need to provide an OpenAI API key, which you can get [here](https://platform.openai.com/account/api-keys). "
-    "You can also learn how to build this app step by step by [following our tutorial](https://docs.streamlit.io/develop/tutorials/llms/build-conversational-apps)."
+client = genai.Client(api_key=st.secrets["GOOGLE_API_KEY"])
+st.markdown(
+    """
+    <h1 style="
+         text-align: center;
+        font-size: 42px;
+        background: linear-gradient(to right, #15ea89, #30b478, #7de4b5);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: bold;
+        margin-bottom: 30px;
+    ">
+     WELCOME TO YOUR PERSONAL AI DOCTOR ASSISTANT
+    </h1>
+""",
+    unsafe_allow_html=True
 )
 
-# Ask user for their OpenAI API key via `st.text_input`.
-# Alternatively, you can store the API key in `./.streamlit/secrets.toml` and access it
-# via `st.secrets`, see https://docs.streamlit.io/develop/concepts/connections/secrets-management
-openai_api_key = st.text_input("OpenAI API Key", type="password")
-if not openai_api_key:
-    st.info("Please add your OpenAI API key to continue.", icon="🗝️")
-else:
 
-    # Create an OpenAI client.
-    client = OpenAI(api_key=openai_api_key)
 
-    # Create a session state variable to store the chat messages. This ensures that the
-    # messages persist across reruns.
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
+if "history" not in st.session_state:
+        st.session_state.history = []
 
-    # Display the existing chat messages via `st.chat_message`.
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+with st.form("doctor_form", clear_on_submit=True):
+        text = st.text_input("Describe your symptoms:")
+        submitted = st.form_submit_button("Consult")
 
-    # Create a chat input field to allow the user to enter a message. This will display
-    # automatically at the bottom of the page.
-    if prompt := st.chat_input("What is up?"):
+if submitted and text: 
+        st.chat_message("user").write(text)
+        st.session_state.history.append(f"user:{text}")                   
+    
+        with st.spinner("Analyzing your symptoms,Please Hold few seconds..."):
 
-        # Store and display the current prompt.
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
+                prompt = f"""
+        You are a multilingual professional  AI medical doctor assistant.
 
-        # Generate a response using the OpenAI API.
-        stream = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": m["role"], "content": m["content"]}
-                for m in st.session_state.messages
-            ],
-            stream=True,
-        )
+        conversation history:
+        {st.session_state.history}
 
-        # Stream the response to the chat using `st.write_stream`, then store it in 
-        # session state.
-        with st.chat_message("assistant"):
-            response = st.write_stream(stream)
-        st.session_state.messages.append({"role": "assistant", "content": response})
+        current user message:
+        {text}
+        Rules:
+        - Detect user's language and reply in same language.
+        - Be calm, polite and reassuring like a real doctor.
+        - Ask follow-up questions if needed.
+        - Give simple explanations.
+        - Suggest precautions.
+        - If symptoms serious → mark EMERGENCY.
+        - Suggest which specialist doctor to consult.
+        - Never give dangerous advice.
+
+        Format response strictly like:
+            1. Understanding of problem
+            2. Possible cause
+            3. Precautions
+            4. When to see doctor
+            """
+
+                response = client.models.generate_content(
+                    model="gemini-1.5-flash",
+                    contents=prompt
+                        )
+                reply = response.text if response.text else "No responce generated"
+
+                st.session_state.history.append(f"Doctor:{reply}")
+                st.chat_message("assistant").write(reply)
+                                  
+                # Emergency detection only
+                if "EMERGENCY" in reply.upper():
+                    st.error("⚠️ Emergency symptoms detected. Seek medical help immediately.")
+
+ye mera code hain
