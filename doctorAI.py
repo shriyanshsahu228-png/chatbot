@@ -1,11 +1,11 @@
 #streamlit run doctorAI.py
 import streamlit as st
 from google import genai
-from dotenv import load_dotenv
-import os
-load_dotenv()
+#from dotenv import load_dotenv
+#import os
+#load_dotenv()
 
-client = genai.Client()
+client = genai.Client(api_key=st.secrets["GOOGLE_API_KEY")
 st.markdown(
     """
     <h1 style="
@@ -23,16 +23,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# if "history" not in st.session_state:
-#     st.session_state.history = []
-#text = st.text_input("Describe your Symptoms:")
 
-#if text:
-        
-        # lang= st.selectbox(
-        #     "Select language to be Translate",["English","Hindi","Marathi","Punjabi","Telugu","French","Spanish"]
-        # )
-#if st.button("Consult AI Doctor") and text:
 
 if "history" not in st.session_state:
         st.session_state.history = []
@@ -44,10 +35,7 @@ with st.form("doctor_form", clear_on_submit=True):
 if submitted and text: 
         st.chat_message("user").write(text)
         st.session_state.history.append(f"user:{text}")                   
-# with st.chat_message("user"):
-#     st.write(text)
-
-#st.session_state.history.append(f"user :{text}")    
+    
         with st.spinner("Analyzing your symptoms,Please Hold few seconds..."):
 
                 prompt = f"""
@@ -76,18 +64,18 @@ if submitted and text:
             """
 
                 response = client.models.generate_content(
-                    model="gemini-2.5-flash",
+                    model="gemini-1.5-flash",
                     contents=prompt
                         )
                 reply = response.text if response.text else "No responce generated"
 
                 st.session_state.history.append(f"Doctor:{reply}")
                 st.chat_message("assistant").write(reply)
-                                    # st.success("completed")
-                                    # st.write(reply)
+                                  
 
                 if "EMERGENCY" in reply.upper():
                     st.error("⚠️ Emergency symptoms detected.Seek medical help immediately.")
                 else:
                     st.write("Enter symptoms and click button to consult AI doctor.")    
+
 
