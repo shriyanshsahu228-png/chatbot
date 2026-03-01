@@ -64,7 +64,7 @@ if submitted and text:
             """
 
                 response = client.models.generate_content(
-                    model="gemini-2.0-flash",
+                    model="gemini-1.5-flash",
                     contents=prompt
                         )
                 reply = response.text if response.text else "No responce generated"
@@ -75,5 +75,6 @@ if submitted and text:
                 # Emergency detection only
                 if "EMERGENCY" in reply.upper():
                     st.error("⚠️ Emergency symptoms detected. Seek medical help immediately.")
+
 
 
