@@ -51,7 +51,7 @@ if submitted and text:
         try:
             # Gemini API call
             response = client.models.generate_content(
-                model="gemini-1.5-flash", 
+                model="gemini-2.5-flash", 
                 contents=[prompt]
             )
             
@@ -71,3 +71,4 @@ if submitted and text:
         # Emergency detection
         if "EMERGENCY" in reply.upper():
             st.error("⚠️ Emergency symptoms detected. Seek medical help immediately.")
+
