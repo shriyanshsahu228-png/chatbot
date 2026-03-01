@@ -5,7 +5,7 @@ from google import genai
 #import os
 #load_dotenv()
 
-client = genai.Client(api_key=st.secrets["GOOGLE_API_KEY")
+client = genai.Client(api_key=st.secrets["GOOGLE_API_KEY"])
 st.markdown(
     """
     <h1 style="
@@ -72,10 +72,6 @@ if submitted and text:
                 st.session_state.history.append(f"Doctor:{reply}")
                 st.chat_message("assistant").write(reply)
                                   
-
+                # Emergency detection only
                 if "EMERGENCY" in reply.upper():
-                    st.error("⚠️ Emergency symptoms detected.Seek medical help immediately.")
-                else:
-                    st.write("Enter symptoms and click button to consult AI doctor.")    
-
-
+                    st.error("⚠️ Emergency symptoms detected. Seek medical help immediately.")
